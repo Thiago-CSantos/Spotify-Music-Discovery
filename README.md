@@ -35,7 +35,8 @@ Para executar o Spotify Discover, use o seguinte comando:
 npm start
 ~~~
 **Créditos**
-# Este projeto foi criado por Thiago Carretero dos Santos.
+# Este projeto foi criado por:
+Thiago Carretero dos Santos.
 **Contribuições**
 Se você gostaria de contribuir para este projeto, sinta-se à vontade para enviar um pull request.
 **Licença**
