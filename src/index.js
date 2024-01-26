@@ -1,27 +1,56 @@
 const express = require('express');
-const server = express();
+const http = require('http');
 const cookieParser = require("cookie-parser");
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const querystring = require('querystring');
 const axios = require('axios');
+
+const app = express();
+const server = http.createServer(app);
 var stateKey = "spotify_auth_state";
 
-const corsOptions = {
-      credentials: true,
-      origin: 'http://localhost:5173',
-};
-server.use(cors(corsOptions));
-server.use(cookieParser({
+//web Socket imports
+const io = require('socket.io')(server, { cors: { origin: 'http://localhost:5173' } });
+
+io.on('connection', socket => {
+      socket.on('select', (dataToken) => {
+
+            axios.get(`http://localhost:8080/player?accessToken=${dataToken}`)
+                  .then((resposta) => {
+                        const dados = resposta.data.dados;
+
+                        // Enviar progresso da musica
+                        socket.emit('update', {
+                              progress_ms: dados.progress_ms,
+                        });
+
+                  }).catch((err) => {
+                        console.log('Erro axios: ', err);
+                  });
+
+      });
+      socket.on('disconnect', (reason) => {
+      });
+
+});
+
+
+// const corsOptions = {
+//       credentials: true,
+//       origin: 'http://localhost:5173',
+// };
+app.use(cors());
+app.use(cookieParser({
       domain: 'localhost',
 }));
-server.use(bodyParser.json());
+app.use(bodyParser.json());
 
 
-server.get("/testando", (req, res) => {
-      res.json({ message: "certo" });
-})
+app.get("/testando", (req, res) => {
+      res.send('Testando endpoint HTTP');
+});
 
 // Verificador de código - fluxo de autorização PKCE
 const generateRandomString = (length) => {
@@ -56,7 +85,7 @@ const scope = "app-remote-control streaming user-read-email user-read-private us
 const authUrl = new URL("https://accounts.spotify.com/authorize");
 
 
-server.get("/login", (req, res) => {
+app.get("/login", (req, res) => {
       const state = generateRandomString(16);
       res.cookie(stateKey, state);
       const code = req.query.code;
@@ -73,7 +102,7 @@ server.get("/login", (req, res) => {
 // generated in the previous step
 // window.localStorage.setItem('code_verifier', codeVerifier);
 
-server.get("/callback", async (req, res) => {
+app.get("/callback", async (req, res) => {
       const url = 'https://accounts.spotify.com/api/token';
       var code = req.query.code || null;
       var state = req.query.state || null;
@@ -102,28 +131,30 @@ server.get("/callback", async (req, res) => {
       console.log(body.data);
 
       // res.status(200).send(body.data);
+      res.redirect(`http://localhost:5173/player?accessToken=${token}`);
       // res.redirect(`http://localhost:5173/testando?accessToken=${token}`);
-      res.redirect(`/player?accessToken=${token}`);
+      // res.redirect(`/player?accessToken=${token}`);
       // res.redirect(`/track?accessToken=${token}`);
 });
 
-server.get("/player", async (req, res) => {
+app.get("/player", async (req, res) => {
       const token = req.query.accessToken;
       if (token) {
             const urlMePlayer = "https://api.spotify.com/v1/me/player";
             const resposta = await axios.get(urlMePlayer, { headers: { 'Authorization': `Bearer ${token}`, } });
+            const dados = resposta.data;
             const urlImage = resposta.data.item.album.images[1].url;
 
             const linkOpenImage = `<a href="${urlImage}" target="_blank"><img src="${urlImage}" alt="Descrição da Imagem"></a>`;
             // res.send(linkOpenImage); é somente para teste
-            res.send(urlImage);
+            res.send({ dados, urlImage });
       }
       else {
-            res.status(400).send('Token não encontrado na query string.');
+            res.status(400).send({ message: 'Token não encontrado na query string.' });
       }
 });
 
-server.get("/track", async (req, res) => {
+app.get("/track", async (req, res) => {
       const token = req.query.accessToken;
 
       const deviceId = "4ab0faed656eecd4fe239421b5a7005f7b670a80"; // Substitua pelo ID do seu dispositivo
@@ -136,4 +167,4 @@ server.get("/track", async (req, res) => {
             });
 });
 
-server.listen(8080);
+server.listen(8080, () => console.log('Servidor escutando na porta 8080'));
