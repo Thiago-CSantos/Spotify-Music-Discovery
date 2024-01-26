@@ -20,7 +20,7 @@ io.on('connection', socket => {
             axios.get(`http://localhost:8080/player?accessToken=${dataToken}`)
                   .then((resposta) => {
                         const dados = resposta.data.dados;
-
+                        console.log(dados.progress_ms);
                         // Enviar progresso da musica
                         socket.emit('update', {
                               progress_ms: dados.progress_ms,
