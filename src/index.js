@@ -10,10 +10,12 @@ var stateKey = "spotify_auth_state";
 
 const corsOptions = {
       credentials: true,
-      origin: /localhost\:5173/,
+      origin: 'http://localhost:5173',
 };
 server.use(cors(corsOptions));
-server.use(cookieParser());
+server.use(cookieParser({
+      domain: 'localhost',
+}));
 server.use(bodyParser.json());
 
 
@@ -57,7 +59,8 @@ const authUrl = new URL("https://accounts.spotify.com/authorize");
 server.get("/login", (req, res) => {
       const state = generateRandomString(16);
       res.cookie(stateKey, state);
-
+      const code = req.query.code;
+      console.log('Code: ' + code);
       res.redirect('https://accounts.spotify.com/authorize?' + querystring.stringify({
             response_type: 'code',
             client_id: clientId,
@@ -65,8 +68,7 @@ server.get("/login", (req, res) => {
             redirect_uri: redirectUri,
             state: state
       }));
-      const code = req.query.code;
-      console.log(code);
+
 });
 // generated in the previous step
 // window.localStorage.setItem('code_verifier', codeVerifier);
@@ -75,7 +77,7 @@ server.get("/callback", async (req, res) => {
       const url = 'https://accounts.spotify.com/api/token';
       var code = req.query.code || null;
       var state = req.query.state || null;
-      console.log(code);
+      console.log('codeCallback: ' + code);
 
       const authOptions = {
             method: 'POST',
@@ -99,8 +101,8 @@ server.get("/callback", async (req, res) => {
 
       console.log(body.data);
 
-      //res.status(200).send(body.data);
-
+      // res.status(200).send(body.data);
+      // res.redirect(`http://localhost:5173/testando?accessToken=${token}`);
       res.redirect(`/player?accessToken=${token}`);
       // res.redirect(`/track?accessToken=${token}`);
 });
@@ -113,8 +115,8 @@ server.get("/player", async (req, res) => {
             const urlImage = resposta.data.item.album.images[1].url;
 
             const linkOpenImage = `<a href="${urlImage}" target="_blank"><img src="${urlImage}" alt="Descrição da Imagem"></a>`;
-            res.send(linkOpenImage);
-            //res.send(resposta.data)
+            // res.send(linkOpenImage); é somente para teste
+            res.send(urlImage);
       }
       else {
             res.status(400).send('Token não encontrado na query string.');
