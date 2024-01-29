@@ -7,6 +7,10 @@ const crypto = require('crypto');
 const querystring = require('querystring');
 const axios = require('axios');
 
+// Routes imports
+const routes = require('./routes');
+
+
 const app = express();
 const server = http.createServer(app);
 var stateKey = "spotify_auth_state";
@@ -46,7 +50,8 @@ app.use(cookieParser({
       domain: 'localhost',
 }));
 app.use(bodyParser.json());
-
+app.use(express.json());
+app.use(routes);
 
 app.get("/testando", (req, res) => {
       console.log(req.headers.device);
