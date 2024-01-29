@@ -49,6 +49,7 @@ app.use(bodyParser.json());
 
 
 app.get("/testando", (req, res) => {
+      console.log(req.headers.device);
       res.send('Testando endpoint HTTP');
 });
 
@@ -95,7 +96,7 @@ app.get("/login", (req, res) => {
             client_id: clientId,
             scope: scope,
             redirect_uri: redirectUri,
-            state: state
+            state: state,
       }));
 
 });
@@ -103,6 +104,7 @@ app.get("/login", (req, res) => {
 // window.localStorage.setItem('code_verifier', codeVerifier);
 
 app.get("/callback", async (req, res) => {
+      console.log('Query: ', req.query);
       const url = 'https://accounts.spotify.com/api/token';
       var code = req.query.code || null;
       var state = req.query.state || null;
@@ -132,7 +134,7 @@ app.get("/callback", async (req, res) => {
 
       // res.status(200).send(body.data);
       res.redirect(`http://localhost:5173/player?accessToken=${token}`);
-      // res.redirect(`http://localhost:5173/testando?accessToken=${token}`);
+      // res.redirect(`http://localhost:5173/redirectDevice?accessToken=${token}`);
       // res.redirect(`/player?accessToken=${token}`);
       // res.redirect(`/track?accessToken=${token}`);
 });
@@ -140,14 +142,20 @@ app.get("/callback", async (req, res) => {
 app.get("/player", async (req, res) => {
       const token = req.query.accessToken;
       if (token) {
-            const urlMePlayer = "https://api.spotify.com/v1/me/player";
-            const resposta = await axios.get(urlMePlayer, { headers: { 'Authorization': `Bearer ${token}`, } });
-            const dados = resposta.data;
-            const urlImage = resposta.data.item.album.images[1].url;
 
-            const linkOpenImage = `<a href="${urlImage}" target="_blank"><img src="${urlImage}" alt="Descrição da Imagem"></a>`;
-            // res.send(linkOpenImage); é somente para teste
-            res.send({ dados, urlImage });
+            try {
+                  const urlMePlayer = "https://api.spotify.com/v1/me/player";
+                  const resposta = await axios.get(urlMePlayer, { headers: { 'Authorization': `Bearer ${token}`, } });
+                  const dados = resposta.data;
+                  const urlImage = resposta.data.item.album.images[1].url;
+                  // const linkOpenImage = `<a href="${urlImage}" target="_blank"><img src="${urlImage}" alt="Descrição da Imagem"></a>`;
+                  // res.send(linkOpenImage); é somente para teste
+                  res.send({ dados, urlImage });
+            } catch (error) {
+                  console.log('ERROR: Selecione uma musica ', error);
+            }
+
+
       }
       else {
             res.status(400).send({ message: 'Token não encontrado na query string.' });
