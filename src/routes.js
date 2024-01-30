@@ -25,7 +25,7 @@ routes.post('/loginApp', (req, res) => {
       if (user) {
             return res.status(200).json(user);
       }
-      return res.status(400).send('Credenciais invalidas');
+      return res.status(401).send('Credenciais invalidas');
 
 
 });
