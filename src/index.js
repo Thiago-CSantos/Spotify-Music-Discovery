@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const cookieParser = require("cookie-parser");
@@ -84,8 +85,8 @@ const base64encode = (input) => {
 // const hashed = sha256(codeVerifier);
 // const codeChallenge = base64encode(hashed);
 
-const clientId = "cab7c6673d954a31828e2f2c616c4c75";
-const clientSecret = "5234815092fa4644bebbcfe7b2928e1a";
+const clientId = process.env.SPOTIFY_CLIENT_ID;
+const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirectUri = "http://localhost:8080/callback";
 const scope = "app-remote-control streaming user-read-email user-read-private user-library-read user-library-modify user-read-playback-state user-modify-playback-state";
 const authUrl = new URL("https://accounts.spotify.com/authorize");
