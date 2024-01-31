@@ -24,9 +24,12 @@ routes.post('/loginApp', async (req, res) => {
                         password: password,
                   }
             })
-
+            const respostaJSON = {
+                  user,
+                  exist: true
+            }
             if (user) {
-                  return res.status(200).json(user);
+                  return res.status(200).json(respostaJSON);
             } else {
                   return res.status(401).send('Credenciais invalidas');
             }
@@ -37,6 +40,33 @@ routes.post('/loginApp', async (req, res) => {
       }
 
 
+});
+
+routes.post('/cadastrarApp', async (req, res) => {
+      const { name, email, password } = req.body;
+
+      try {
+
+            const existeUsuario = await Users.findOne({
+                  where: {
+                        email: email,
+                  }
+            });
+            console.log('existeUsuario: ', existeUsuario);
+            if (existeUsuario) {
+                  return res.status(416).send('O email já está em uso.');
+            }
+
+            const novoUsuario = await Users.create({
+                  name: name,
+                  email: email,
+                  password: password,
+            });
+            return res.status(201).json(novoUsuario);
+      } catch (error) {
+            console.error('Erro ao cadastrar novo usuário:', error);
+            return res.status(500).send('Erro interno do servidor');
+      }
 });
 
 module.exports = routes;
