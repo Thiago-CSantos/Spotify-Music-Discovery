@@ -185,4 +185,8 @@ app.get("/track", async (req, res) => {
             });
 });
 
+app.get('/', (res, response) => {
+      response.send('Hello World');
+});
+
 server.listen(port, () => console.log('Servidor escutando na porta:', port));
