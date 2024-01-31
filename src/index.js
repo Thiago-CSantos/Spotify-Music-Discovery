@@ -8,6 +8,10 @@ const crypto = require('crypto');
 const querystring = require('querystring');
 const axios = require('axios');
 
+// Porta de acesso
+const port = process.env.PORT;
+const portFront = process.env.PORT_FRONT;
+
 // Routes imports
 const routes = require('./routes');
 
@@ -17,7 +21,7 @@ const server = http.createServer(app);
 var stateKey = "spotify_auth_state";
 
 //web Socket imports
-const io = require('socket.io')(server, { cors: { origin: 'http://localhost:5173' } });
+const io = require('socket.io')(server, { cors: { origin: `${portFront}` } });
 
 io.on('connection', socket => {
       socket.on('select', (dataToken) => {
@@ -87,7 +91,7 @@ const base64encode = (input) => {
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-const redirectUri = "http://localhost:8080/callback";
+const redirectUri = `http://localhost:${port}/callback`;
 const scope = "app-remote-control streaming user-read-email user-read-private user-library-read user-library-modify user-read-playback-state user-modify-playback-state";
 const authUrl = new URL("https://accounts.spotify.com/authorize");
 
@@ -139,7 +143,7 @@ app.get("/callback", async (req, res) => {
       console.log(body.data);
 
       // res.status(200).send(body.data);
-      res.redirect(`http://localhost:5173/player?accessToken=${token}`);
+      res.redirect(`${portFront}/player?accessToken=${token}`);
       // res.redirect(`http://localhost:5173/redirectDevice?accessToken=${token}`);
       // res.redirect(`/player?accessToken=${token}`);
       // res.redirect(`/track?accessToken=${token}`);
@@ -181,4 +185,4 @@ app.get("/track", async (req, res) => {
             });
 });
 
-server.listen(8080, () => console.log('Servidor escutando na porta 8080'));
+server.listen(port, () => console.log('Servidor escutando na porta:', port));
