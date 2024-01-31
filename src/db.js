@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 // URL fornecida pelo ElephantSQL
-const urlDataBase = 'postgres://bfstavjj:Spxe96xqCbaga1hojp5t3aMlXB1Kr-a_@kesavan.db.elephantsql.com/bfstavjj';
+const urlDataBase = process.env.ELEPHANTSQL_URL_DATABASE;
 
 // Configuração da conexão com o banco de dados
 const sequelize = new Sequelize(urlDataBase, {
